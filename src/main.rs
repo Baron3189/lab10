@@ -6,7 +6,7 @@ use rand::rngs::StdRng;
 
 const FLEET_PATH: &str = "data/fleet.txt";
 const SCORES_PATH: &str = "data/scores.txt";
-// TODO (Task 8): add PRACTICE_PATH ("data/boards/practice.txt").
+const PRACTICE_PATH: &str = "data/boards/practice.txt";
 const TOP_N: usize = 5;
 
 fn main() {
@@ -39,14 +39,18 @@ fn main() {
 
 // Print the best scores, highest first, or a message if there are none.
 fn show_top_scores(n: usize) {
-    // TODO (Task 9): load the scores; print "TOP n"; if there are none print
-    // "  no scores yet"; otherwise sort with data::sort_scores_desc and print up
-    // to n lines like
-    //  1. Ana              83
-    println!("TOP {n}");
-    println!("  (high scores are not shown yet)");
-}
+    let mut scores = data::load_scores(SCORES_PATH);
+    data::sort_scores_desc(&mut scores);
 
+    println!("TOP {n}:");
+    if scores.is_empty() {
+        println!("  no scores yet");
+    } else {
+        for (i, record) in scores.iter().take(n).enumerate() {
+            println!("  {}. {:<20} {}", i + 1, record.name, record.score);
+        }
+    }
+}
 // A scored game against a randomly placed fleet.
 fn play_game(fleet: &[ShipSpec]) {
     let mut board = board::new_board();
@@ -66,13 +70,18 @@ fn play_game(fleet: &[ShipSpec]) {
 
 // An unscored game on the fixed layout in the practice file.
 fn practice_game() {
-    // TODO (Task 8): load the board with data::load_board(PRACTICE_PATH). On
-    // Some(mut board), play it with play_round and print
-    // "Practice board cleared in N shots." when play_round returns Some(N).
-    // On None, print "Practice board unavailable."
-    println!("Practice mode is not available yet.");
-}
+    let mut board = match data::load_board(PRACTICE_PATH) {
+        Some(b) => b,
+        None => {
+            println!("Practice board unavailable.");
+            return;
+        }
+    };
 
+    if let Some(shots) = play_round(&mut board) {
+        println!("Practice board cleared in {shots} shots.");
+    }
+}
 // Fire until every ship is sunk. Returns the number of shots, or None if the
 // player types "quit". PROVIDED.
 fn play_round(board: &mut Board) -> Option<u32> {
