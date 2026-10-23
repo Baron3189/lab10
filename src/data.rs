@@ -93,10 +93,40 @@ pub fn parse_ship_line(line: &str) -> Option<ShipSpec> {
 //     Skipped N invalid line(s) in <path>
 // to stderr (eprintln!). If the file cannot be read, print the error to
 // stderr and return an empty Vec.
-pub fn load_fleet(_path: &str) -> Vec<ShipSpec> {
-    todo!("Task 2: load_fleet")
-}
+pub fn load_fleet<P: AsRef<std::path::Path>>(path: P) -> (Vec<ShipSpec>, usize) {
+    let path_ref = path.as_ref();
+    let file = match std::fs::File::open(path_ref) {
+        Ok(f) => f,
+        Err(e) => {
+            eprintln!("Error opening file {:?}: {}", path_ref, e);
+            return (Vec::new(), 0);
+        }
+    };
+    
+    let reader = std::io::BufReader::new(file);
+    let mut fleet = Vec::new();
+    let mut skipped = 0;
 
+    for line_result in std::io::BufRead::lines(reader) {
+        if let Ok(line) = line_result {
+            let trimmed = line.trim();
+            if trimmed.is_empty() || trimmed.starts_with('#') {
+                continue;
+            }
+            
+            match parse_ship_line(&line) {
+                Some(ship) => fleet.push(ship),
+                None => skipped += 1,
+            }
+        }
+    }
+
+    if skipped > 0 {
+        eprintln!("Skipped {} invalid line(s) in {:?}", skipped, path_ref);
+    }
+
+    (fleet, skipped)
+}
 // Task 3.
 // Turn the text of a board file into a Board (a 2D array). The text has SIZE
 // rows of SIZE characters: '.' is water, 'S' is a ship. Blank lines and lines
