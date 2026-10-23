@@ -62,12 +62,19 @@ fn play_game(fleet: &[ShipSpec]) {
     if let Some(shots) = play_round(&mut board) {
         let score = board::score_for(shots);
         println!("All ships sunk in {shots} shots. Score: {score}");
+        
         // TODO (Task 10): if score > 0, ask for a name with ui::prompt, build a
         // ScoreRecord (add it to the `use` line), and save it with
-        // data::append_score. Print "Score saved." only when it returns true.
+       // data::append_score. Print "Score saved." only when it returns true.
+       if score > 0 {
+            let name = ui::prompt("Enter name for high score: ");
+            let record = data::ScoreRecord { name, score };
+            if data::append_score(SCORES_PATH, &record) {
+                println!("Score saved.");
+            }
+        }
     }
-}
-
+}	
 // An unscored game on the fixed layout in the practice file.
 fn practice_game() {
     let mut board = match data::load_board(PRACTICE_PATH) {
