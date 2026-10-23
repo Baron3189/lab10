@@ -1,5 +1,4 @@
 // Loading and saving game data.
-use crate::board::Board;
 
 pub const MIN_SHIP: usize = 2;
 pub const MAX_SHIP: usize = 5;
@@ -169,9 +168,18 @@ pub fn parse_board(contents: &str) -> Option<[[Cell; 10]; 10]> {
 // Task 4.
 // Read the file at path and parse it with parse_board. On a read error, or if
 // parse_board returns None, print a message to stderr and return None.
-pub fn load_board(_path: &str) -> Option<Board> {
-    todo!("Task 4: load_board")
+pub fn load_board<P: AsRef<std::path::Path>>(path: P) -> Option<[[Cell; 10]; 10]> {
+    let path_ref = path.as_ref();
+    let contents = match std::fs::read_to_string(path_ref) {
+        Ok(c) => c,
+        Err(e) => {
+            eprintln!("Error reading board file {:?}: {}", path_ref, e);
+            return None;
+        }
+    };
+    parse_board(&contents)
 }
+
 
 // Task 6.
 // Append "name,score" as one line to path, creating the file if needed.
