@@ -5,7 +5,7 @@ use rand::SeedableRng;
 use rand::rngs::StdRng;
 
 const FLEET_PATH: &str = "data/fleet.txt";
-// TODO (Task 6): add SCORES_PATH ("data/scores.txt").
+const SCORES_PATH: &str = "data/scores.txt";
 // TODO (Task 8): add PRACTICE_PATH ("data/boards/practice.txt").
 const TOP_N: usize = 5;
 
