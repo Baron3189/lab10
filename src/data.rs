@@ -186,15 +186,41 @@ pub fn load_board<P: AsRef<std::path::Path>>(path: P) -> Option<[[Cell; 10]; 10]
 // Replace commas in the name with spaces so the line stays parseable.
 // Return true if the write succeeded; on failure print the error to stderr
 // and return false.
-pub fn append_score(_path: &str, _record: &ScoreRecord) -> bool {
-    todo!("Task 6: append_score")
+pub fn append_score(path: &str, record: &ScoreRecord) -> bool {
+    use std::fs::OpenOptions;
+    use std::io::Write;
+
+    let clean_name = record.name.replace(',', " ");
+    let line = format!("{},{}\n", clean_name, record.score);
+
+    let mut file = match OpenOptions::new().create(true).append(true).open(path) {
+        Ok(f) => f,
+        Err(e) => {
+            eprintln!("Error opening score file {path:?}: {e}");
+            return false;
+        }
+    };
+
+    if let Err(e) = file.write_all(line.as_bytes()) {
+        eprintln!("Error writing score to {path:?}: {e}");
+        return false;
+    }
+
+    true
 }
 
 // Task 7.
 // Read every valid score line from path. A missing file is normal on the
 // first run: return an empty Vec and print nothing. Skip lines that
 // parse_score rejects.
-pub fn load_scores(_path: &str) -> Vec<ScoreRecord> {
-    todo!("Task 7: load_scores")
-}
+pub fn load_scores(path: &str) -> Vec<ScoreRecord> {
+    let contents = match std::fs::read_to_string(path) {
+        Ok(c) => c,
+        Err(_) => return Vec::new(),
+    };
 
+    contents
+        .lines()
+        .filter_map(parse_score)
+        .collect()
+}
