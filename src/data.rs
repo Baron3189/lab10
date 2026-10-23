@@ -133,10 +133,39 @@ pub fn load_fleet<P: AsRef<std::path::Path>>(path: P) -> (Vec<ShipSpec>, usize) 
 // starting with '#' are ignored. Return None for too few rows, too many rows,
 // a row of the wrong width, or any other character.
 // Start from board::new_board() and fill in board[row][col].
-pub fn parse_board(_text: &str) -> Option<Board> {
-    todo!("Task 3: parse_board")
-}
+use crate::board::Cell; // Make sure Cell is imported at the top of src/data.rs if not already
 
+pub fn parse_board(contents: &str) -> Option<[[Cell; 10]; 10]> {
+    let mut board = [[Cell::Water; 10]; 10];
+    let lines: Vec<&str> = contents
+        .lines()
+        .map(|l| l.trim())
+        .filter(|l| !l.is_empty())
+        .collect();
+
+    // Must have exactly 10 rows
+    if lines.len() != 10 {
+        return None;
+    }
+
+    for (r, line) in lines.iter().enumerate() {
+        let chars: Vec<char> = line.chars().filter(|c| !c.is_whitespace()).collect();
+        
+        // Each row must have exactly 10 columns
+        if chars.len() != 10 {
+            return None;
+        }
+
+        for (c, &ch) in chars.iter().enumerate() {
+            board[r][c] = match ch {
+                '~' | '.' => Cell::Water,
+                _ => Cell::Ship, // Any other character (like ship letters) maps to Cell::Ship
+            };
+        }
+    }
+
+    Some(board)
+}
 // Task 4.
 // Read the file at path and parse it with parse_board. On a read error, or if
 // parse_board returns None, print a message to stderr and return None.
